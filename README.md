@@ -26,21 +26,21 @@ reassigned.
 ## Syntax
 
 A program is composed of a series of textual elements called
-*tings*. Tings are processed in order, top-down, and take
+*phrases*. Phrases are processed in order, top-down, and take
 effect immediately.
 
-The most basic type of ting is an instruction. For example,
+The most basic type of phrase is an instruction. For example,
 the following instruction causes the computer to emit a
 sound:
 
 ```
-:beep
+beep
 ```
 
-All instructions match the regex `^:[a-z\-]+$`.
+All instructions match the regex `^[a-z\-]+$`.
 
-The other types of tings represent data. When the computer
-encounters a data ting, it pushes the ting onto a stack.
+The other types of phrases represent data. When the computer
+encounters a data phrase, it pushes the phrase onto a stack.
 
 Strings are one type of data. Strings are demarcated by
 quotes.
@@ -50,107 +50,70 @@ program in Fith:
 
 ```
 "Hello, world!"
-:print-line
+print-line
 ```
 
-If a string consists only of alphabetic characters and
-dashes, the quotes may be omitted:
+Fith also has rational numbers. Some examples:
 
 ```
-hello
-:print-line
+456
+314159/100000
+-1
 ```
 
-Fith also has integers. Integers are arbitrarily long
-sequences of decimal digits, optionally preceded by a minus
-sign:
+If the denominator of a rational number is a power of 10, it
+can be abbreviated using a decimal point. The following are
+valid:
 
 ```
-314159265358979
+123.
+10.001
+3.14159
+.25
+0.1
 ```
 
 There are no floating-point numbers.
 
-The last type of ting is the list, which consists of any
-number of tings surrounded by square brackets.
+The last type of phrase is the list, which consists of any
+number of phrases surrounded by square brackets.
 
 ```
-[ hello :print ]
+[ "hello" print-line ]
 ```
 
-## Instructions
+## Macros
+
+To make fith more convenient to write, you can define macros
+which expand to one or more phrases.
 
 ```
-value name :set
+[ "a long message that I don't want to repeat" ] "msg" macro
+msg print-line
+msg print-line
 ```
 
-Stores the value `value` in the variable `name`. Storage for
-the variable is allocated if it doesn't yet exist.
+You can think of macro expansion as copy-pasting the phrases
+in the macro definition in place of the name. So you can
+do this, too:
 
 ```
-name :get
+[
+  "*****************"
+  print-line
+  print-line
+  "*****************"
+  print-line
+] "banner" macro
+
+"welcome to fith!"
+banner
 ```
 
-Retrieves the current value of the variable `name` and puts
-the value on top of the stack.
+This prints:
 
 ```
-list item :append
+*****************
+welcome to fith!
+*****************
 ```
-
-Puts a list on top of the stack, obtained by appending the
-given `item` to the end of the given `list`. The original
-`list` is not modified.
-
-```
-list i :at
-```
-
-Retrieves the item in the `list` at index `i` and puts it on
-top of the stack. Crashes if the index is out of bounds.
-
-```
-list :call
-```
-
-Evaluates the tings in the `list`, as if they appeared in
-the program in place of the `:call` instruction.
-
-```
-else then condition :if
-```
-
-If `condition` is not `0`, `:call`s the `then` list.
-Otherwise, `:call`s the `else` list.
-
-```
-else then condition :if-zero
-```
-
-If `condition` is `0`, `:call`s the `then` list. Otherwise,
-`:call`s the `else` list.
-
-```
-loop condition :while
-```
-
-`condition` and `loop` are both lists. `:while` `:call`s
-the `condition` and then removes the top item from the
-stack. If that item is not `0`, it then `:call`s the `loop`.
-It does this repeatedly until the result of the `condition`
-is `0`.
-
-```
-:push
-```
-
-`:push` creates a new namespace for variables. Tings
-evaluated after a `:push` cannot access any variables that
-were defined before the `:push` happened.
-
-```
-:pop
-```
-
-`:pop` undoes the most recent `:push`. Any variables that
-were `:set` since the `:push` happened vanish.
