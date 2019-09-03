@@ -76,8 +76,10 @@ func (p *Parser) parseOnePhrase() eval.Phrase {
 		return p.parseWhitespace()
 	case r == '[':
 		return p.parseList()
-	case r >= 'a' && r <= 'z':
+	case isValidInInstructions(r):
 		return p.parseInstruction()
+	case r == '"':
+		return p.parseString()
 	default:
 		next, _ := p.in.Next() // consume the invalid input
 		p.errOut.Write([]byte(fmt.Sprintf("unexpected character '%c' in input\n", next)))
@@ -123,7 +125,7 @@ func (p *Parser) parseInstruction() eval.Phrase {
 	p.currentPhrase.Reset()
 	for {
 		next, ok := p.in.Peek()
-		if next > 'z' || next < 'a' {
+		if !isValidInInstructions(next) {
 			break
 		}
 		if !ok {
@@ -133,4 +135,25 @@ func (p *Parser) parseInstruction() eval.Phrase {
 		p.currentPhrase.WriteRune(next)
 	}
 	return eval.InstructionPhrase(p.currentPhrase.String())
+}
+
+func (p *Parser) parseString() eval.Phrase {
+	p.currentPhrase.Reset()
+	p.in.Next() // consume the opening quote
+	for {
+		next, ok := p.in.Next()
+		if !ok {
+			p.errOut.Write([]byte("unexpected end of input, expecting \"\n"))
+			break
+		}
+		if next == '"' {
+			break
+		}
+		p.currentPhrase.WriteRune(next)
+	}
+	return eval.StringPhrase(p.currentPhrase.String())
+}
+
+func isValidInInstructions(r rune) bool {
+	return r >= 'a' && r <= 'z' || r == '-'
 }

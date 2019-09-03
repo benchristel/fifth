@@ -95,4 +95,11 @@ var _ = Describe("the fith parser", func() {
 		Expect(<-out).To(BeNil())
 		Expect(errOut.String()).To(Equal("unexpected character ',' in input\n"))
 	})
+
+	It("parses a string", func() {
+		doParse(`"Hello, world!"`)
+
+		Expect(<-out).To(Equal(eval.StringPhrase("Hello, world!")))
+		Expect(errOut.String()).To(Equal(""))
+	})
 })

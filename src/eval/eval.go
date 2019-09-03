@@ -5,13 +5,17 @@ import (
 )
 
 type Phrase interface {
-	Eval(ExecutionContext)
+	Eval(*ExecutionContext)
 }
 
 type ExecutionContext struct {
 	stack     *PhraseStack
 	err       error
 	namespace Namespace
+}
+
+func NewExecutionContext() *ExecutionContext {
+	return &ExecutionContext{stack: NewPhraseStack()}
 }
 
 type Namespace struct {
@@ -21,31 +25,32 @@ type Namespace struct {
 
 type StringPhrase string
 
-func (s StringPhrase) Eval(ctx ExecutionContext) {
+func (s StringPhrase) Eval(ctx *ExecutionContext) {
 	ctx.stack.Push(s)
 }
 
 type IntPhrase int
 
-func (i IntPhrase) Eval(ctx ExecutionContext) {
+func (i IntPhrase) Eval(ctx *ExecutionContext) {
 	ctx.stack.Push(i)
 }
 
 type InstructionPhrase string
 
-func (i InstructionPhrase) Eval(ctx ExecutionContext) {
-	// if expansion, exists := ctx.namespace.macros[i]; exists {
-	// 	for _, phrase := range expansion {
-	// 		phrase.Eval(ctx)
-	// 	}
-	// } else {
-	//
-	// }
+func (i InstructionPhrase) Eval(ctx *ExecutionContext) {
+	if i == "print-line" {
+		message, err := ctx.stack.Pop()
+		if err == nil {
+			fmt.Println(message)
+		} else {
+			// TODO: handle error
+		}
+	}
 }
 
 type ListPhrase []Phrase
 
-func (i ListPhrase) Eval(ctx ExecutionContext) {
+func (i ListPhrase) Eval(ctx *ExecutionContext) {
 
 }
 

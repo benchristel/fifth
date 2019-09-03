@@ -4,7 +4,6 @@ import (
 	"./eval"
 	"./parse"
 	"bufio"
-	"fmt"
 	"io"
 	"os"
 )
@@ -40,8 +39,9 @@ func Parse(in chan rune, out chan eval.Phrase, errOut io.Writer) {
 }
 
 func Eval(input chan eval.Phrase, errOut io.Writer, done chan struct{}) {
+	ctx := eval.NewExecutionContext()
 	for phrase := range input {
-		fmt.Printf("parsed: %v\n", phrase)
+		phrase.Eval(ctx)
 	}
 	close(done)
 }
