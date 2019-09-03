@@ -16,9 +16,10 @@ func main() {
 func Repl(in io.Reader, out io.Writer, errOut io.Writer) {
 	runesToParse := make(chan rune, 4096)
 	phrasesToEval := make(chan eval.Phrase, 1024)
+	done := make(chan struct{})
 
 	go Parse(runesToParse, phrasesToEval, errOut)
-	go Eval(phrasesToEval, errOut)
+	go Eval(phrasesToEval, errOut, done)
 
 	input := bufio.NewReader(in)
 	for {
@@ -31,14 +32,16 @@ func Repl(in io.Reader, out io.Writer, errOut io.Writer) {
 		}
 	}
 	close(runesToParse)
+	<-done
 }
 
 func Parse(in chan rune, out chan eval.Phrase, errOut io.Writer) {
 	parse.NewParser(parse.NewInputStream(in), out, errOut).Parse()
 }
 
-func Eval(input chan eval.Phrase, errOut io.Writer) {
+func Eval(input chan eval.Phrase, errOut io.Writer, done chan struct{}) {
 	for phrase := range input {
 		fmt.Printf("parsed: %v\n", phrase)
 	}
+	close(done)
 }
