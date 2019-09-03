@@ -1,10 +1,10 @@
 package main
 
 import (
-  "fmt"
 	"./eval"
 	"./parse"
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 )
@@ -26,9 +26,9 @@ func Repl(in io.Reader, out io.Writer, errOut io.Writer) {
 		if err != nil {
 			break // Most likely, we reached the end of the stream
 		}
-    for _, rune := range line {
-      runesToParse <- rune
-    }
+		for _, rune := range line {
+			runesToParse <- rune
+		}
 	}
 	close(runesToParse)
 }
@@ -39,6 +39,6 @@ func Parse(in chan rune, out chan eval.Phrase, errOut io.Writer) {
 
 func Eval(input chan eval.Phrase, errOut io.Writer) {
 	for phrase := range input {
-    fmt.Printf("parsed: %v\n", phrase)
+		fmt.Printf("parsed: %v\n", phrase)
 	}
 }
