@@ -9,7 +9,7 @@ import (
 	"../eval"
 )
 
-var _ = Describe("the fith parser", func() {
+var _ = Describe("the fifth parser", func() {
 	var in chan rune
 	var out chan eval.Phrase
 	var errOut *strings.Builder

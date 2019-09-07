@@ -1,20 +1,20 @@
-# Fith
+# Fifth
 
-Fith (working title) is a very simple programming language
+Fifth (working title) is a very simple programming language
 inspired by Forth. One difference from Forth is that it has
 a much more modern and convenient way of dealing with
 arrays.
 
 ## Design Goals
 
-Fith is designed to be a comfortable compilation target
+Fifth is designed to be a comfortable compilation target
 for higher-level languages. It should be very simple to
-implement a Fith VM. Fith is also supposed to be reasonably
+implement a Fifth VM. Fifth is also supposed to be reasonably
 pleasant to read.
 
 ## Overall Structure
 
-Fith is a stack-based language where the computer's
+Fifth is a stack-based language where the computer's
 "working memory" is represented as a stack. Data to be
 manipulated are loaded onto the stack, and then operated on
 by *instructions*. Instructions always affect the topmost
@@ -46,14 +46,14 @@ Strings are one type of data. Strings are demarcated by
 quotes.
 
 To show off the use of strings, here is the Hello World
-program in Fith:
+program in Fifth:
 
 ```
 "Hello, world!"
 print-line
 ```
 
-Fith also has rational numbers. Some examples:
+Fifth also has rational numbers. Some examples:
 
 ```
 456
@@ -84,7 +84,7 @@ number of phrases surrounded by square brackets.
 
 ## Macros
 
-To make fith more convenient to write, you can define macros
+To make fifth more convenient to write, you can define macros
 which expand to one or more phrases.
 
 ```
@@ -106,7 +106,7 @@ do this, too:
   print-line
 ] "banner" macro
 
-"welcome to fith!"
+"welcome to fifth!"
 banner
 ```
 
@@ -114,6 +114,6 @@ This prints:
 
 ```
 *****************
-welcome to fith!
+welcome to fifth!
 *****************
 ```
