@@ -58,7 +58,9 @@ Fifth also has rational numbers. Some examples:
 ```
 456
 314159/100000
+22/7
 -1
+571895172834791800928419527190192
 ```
 
 If the denominator of a rational number is a power of 10, it
