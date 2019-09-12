@@ -16,7 +16,7 @@ var _ = Describe("the fifth parser", func() {
 	var parser *parse.Parser
 
 	doParse := func(input string) {
-		in = make(chan rune, 128)
+		in = make(chan rune, len(input))
 		out = make(chan eval.Phrase, 128)
 		errOut = &strings.Builder{}
 		for _, r := range input {
