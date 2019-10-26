@@ -16,6 +16,11 @@ for higher-level languages. It should be very simple to
 implement a Fifth VM. Fifth is also supposed to be
 reasonably pleasant to read.
 
+## Status of This Document
+
+This specification is a draft, and many parts of it are
+incomplete. Everything is subject to change.
+
 ## Overall Structure
 
 Fifth is a stack-based language where the computer's
