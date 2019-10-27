@@ -52,24 +52,25 @@ module Fifth
     end
 
     context "with many keys" do
-      MAX = 33
+      MANY = 33
+
       subject do
-        (0..MAX).reduce(Map.new) do |map, n|
+        (0...MANY).reduce(Map.new) do |map, n|
           map.set(n, n.to_s)
         end
       end
 
       it "remembers them all" do
-        (0..MAX).reverse_each do |n|
+        (0...MANY).reverse_each do |n|
           expect(subject.get(n)).to eq n.to_s
         end
       end
 
       it "replaces their values" do
-        new = (0..MAX).reduce(subject) do |map, n|
+        new = (0...MANY).reduce(subject) do |map, n|
           map.set(n + 1, n.to_s)
         end
-        (0..MAX).reverse_each do |n|
+        (0...MANY).reverse_each do |n|
           expect(new.get(n + 1)).to eq n.to_s
         end
       end
@@ -77,20 +78,20 @@ module Fifth
       it "can delete just one" do
         no_zero = subject.delete(0)
         expect(no_zero.contains? 0).to be false
-        (1..MAX).each do |n|
+        (1...MANY).each do |n|
           expect(no_zero.contains? n).to be true
         end
       end
 
       it "can delete them all" do
-        emptied = (0..MAX).reduce(subject) do |map, n|
+        emptied = (0...MANY).reduce(subject) do |map, n|
           map.delete(n)
         end
         expect(emptied.contains? 0).to be false
         expect(emptied.contains? 1).to be false
         expect(emptied.contains? 2).to be false
         expect(emptied.contains? 3).to be false
-        expect(emptied.contains? MAX).to be false
+        expect(emptied.contains? MANY).to be false
       end
     end
 
@@ -135,6 +136,27 @@ module Fifth
         map = Map.new.set(good, 1)
         expect(map.delete(evil).contains? good).to be true
       end
+
+      it "is equal to an equivalent map" do
+        a = Map.new.set(good, 1).set(evil, 2)
+        b = Map.new.set(good, 1).set(evil, 2)
+        expect(a).to eq b
+        expect(a.hash).to eq b.hash
+      end
+    end
+
+    it "compares for equality by value" do
+      expect(Map.new).to eq Map.new
+      expect(Map.new.set("foo", 1)).to eq Map.new.set("foo", 1)
+
+      many_keys = (0..100).reduce(Map.new) { |map, n| map.set(n, n) }
+      many_keys2 = (0..100).reverse_each.reduce(Map.new) { |map, n| map.set(n, n) }
+      expect(many_keys).to eq many_keys2
+    end
+
+    it "computes its hash by value" do
+      expect(Map.new.hash).to eq Map.new.hash
+      expect(Map.new.set("foo", 1).hash).to eq Map.new.set("foo", 1).hash
     end
   end
 end

@@ -13,7 +13,7 @@ module Fifth
       end
     end
 
-    class CollisionList
+    class CollisionList < Struct.new(:list)
       def initialize(list = List::Empty)
         @list = list
       end
@@ -23,12 +23,12 @@ module Fifth
       end
 
       def get(key)
-        list = @list
-        while list != List::Empty
-          return list.head.value if list.head.key == key
-          list = list.tail
+        matches = @list.select { |entry| entry.key == key }
+        if matches.empty?
+          nil
+        else
+          matches.head.value
         end
-        nil
       end
 
       def delete(key)
@@ -99,6 +99,20 @@ module Fifth
 
     def inspect
       @items.inspect
+    end
+
+    def ==(other)
+      other.is_a?(Map) && other.items == items
+    end
+
+    def hash
+      @items.hash
+    end
+
+    protected
+
+    def items
+      @items
     end
 
     private
