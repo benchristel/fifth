@@ -32,7 +32,8 @@ module Fifth
     class Entry < Struct.new(:key, :value)
     end
 
-    def initialize(items = Array.new(BASE))
+    def initialize(level = 1, items = Array.new(BASE))
+      @level = level
       @items = items
     end
 
@@ -41,12 +42,12 @@ module Fifth
       true
     end
 
-    def get(key, level = 1)
-      index = index_at_level(key.hash, level)
+    def get(key)
+      index = index_at_level(key.hash)
       value =
         case @items[index]
         when Map
-          @items[index].get(key, level + 1)
+          @items[index].get(key)
         when Entry
           @items[index].key == key ? @items[index].value : nil
         when List::Cell
@@ -63,15 +64,15 @@ module Fifth
       value
     end
 
-    def set(key, value, level = 1)
-      index = index_at_level(key.hash, level)
+    def set(key, value)
+      index = index_at_level(key.hash)
       items = @items.clone
       items[index] =
         case items[index]
         when nil
           Entry.new(key, value)
         when Map
-          items[index].set(key, value, level + 1)
+          items[index].set(key, value)
         when List::Cell
           items[index].cons(Entry.new(key, value))
         else
@@ -79,16 +80,16 @@ module Fifth
           if existing.key == key
             Entry.new(key, value)
           else
-            if level < MAX_LEVEL
-              Map.new
-                .set(key, value, level + 1)
-                .set(existing.key, existing.value, level + 1)
+            if @level < MAX_LEVEL
+              Map.new(@level + 1)
+                .set(key, value)
+                .set(existing.key, existing.value)
             else
               List::Empty.cons(Entry.new(key, value)).cons(Entry.new(existing.key, existing.value))
             end
           end
         end
-      Map.new(items)
+      Map.new(@level, items)
     end
 
     def inspect
@@ -97,7 +98,7 @@ module Fifth
 
     protected
 
-    def index_at_level(hash, level)
+    def index_at_level(hash, level = @level)
       if level == 1
         hash % BASE
       else
