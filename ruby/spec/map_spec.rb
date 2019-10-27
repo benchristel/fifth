@@ -30,28 +30,67 @@ module Fifth
       it "says the key is present" do
         expect(subject.contains? "foo").to be true
       end
+
+      it "can delete the key" do
+        expect(subject.delete("foo").contains? "foo").to be false
+      end
+    end
+
+    context "with two keys" do
+      subject do
+        Map.new.set("foo", 1).set("bar", 2)
+      end
+
+      it "can delete one key without affecting the other" do
+        no_foo = subject.delete("foo")
+        expect(no_foo.contains? "foo").to be false
+        expect(no_foo.contains? "bar").to be true
+        no_bar = subject.delete("bar")
+        expect(no_bar.contains? "foo").to be true
+        expect(no_bar.contains? "bar").to be false
+      end
     end
 
     context "with many keys" do
+      MAX = 33
       subject do
-        (0..9).reduce(Map.new) do |map, n|
+        (0..MAX).reduce(Map.new) do |map, n|
           map.set(n, n.to_s)
         end
       end
 
       it "remembers them all" do
-        (0..9).reverse_each do |n|
+        (0..MAX).reverse_each do |n|
           expect(subject.get(n)).to eq n.to_s
         end
       end
 
       it "replaces their values" do
-        new = (0..9).reduce(subject) do |map, n|
+        new = (0..MAX).reduce(subject) do |map, n|
           map.set(n + 1, n.to_s)
         end
-        (0..9).reverse_each do |n|
+        (0..MAX).reverse_each do |n|
           expect(new.get(n + 1)).to eq n.to_s
         end
+      end
+
+      it "can delete just one" do
+        no_zero = subject.delete(0)
+        expect(no_zero.contains? 0).to be false
+        (1..MAX).each do |n|
+          expect(no_zero.contains? n).to be true
+        end
+      end
+
+      it "can delete them all" do
+        emptied = (0..MAX).reduce(subject) do |map, n|
+          map.delete(n)
+        end
+        expect(emptied.contains? 0).to be false
+        expect(emptied.contains? 1).to be false
+        expect(emptied.contains? 2).to be false
+        expect(emptied.contains? 3).to be false
+        expect(emptied.contains? MAX).to be false
       end
     end
 
@@ -78,6 +117,23 @@ module Fifth
       it "does not mistake an absent key for a single present one" do
         map = Map.new.set(good, 1)
         expect { map.get(absent) }.to raise_error 'Cannot get nonexistent key #<Double :absent>'
+      end
+
+      it "can overwrite the value for a key" do
+        expect(subject.set(good, "new").get(good)).to eq "new"
+        expect(subject.set(evil, "new").get(evil)).to eq "new"
+      end
+
+      it "can delete a value" do
+        expect(subject.contains? evil).to be true
+        map = subject.delete(evil)
+        expect(map.contains? evil).to be false
+        expect(map.contains? good).to be true
+      end
+
+      it "does not delete a different key when there is a collision" do
+        map = Map.new.set(good, 1)
+        expect(map.delete(evil).contains? good).to be true
       end
     end
   end

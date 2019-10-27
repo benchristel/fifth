@@ -8,6 +8,14 @@ module Fifth
       def cons(item)
         List::Cell.new(item, self)
       end
+
+      def select(&block)
+        if yield head
+          tail.select(&block).cons(head)
+        else
+          tail.select(&block)
+        end
+      end
     end
 
     Empty = Class.new(Cell) do
@@ -21,6 +29,10 @@ module Fifth
 
       def tail
         raise "Cannot get tail of empty list."
+      end
+
+      def select
+        Empty
       end
     end.new(nil, nil)
   end

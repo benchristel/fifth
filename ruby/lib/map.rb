@@ -30,6 +30,10 @@ module Fifth
         end
         nil
       end
+
+      def delete(key)
+        self.class.new(@list.select { |entry| entry.key != key })
+      end
     end
 
     def initialize(level = 1, items = Array.new(BASE))
@@ -58,10 +62,8 @@ module Fifth
     end
 
     def set(key, value)
-      index = index_at_level(key.hash)
-      items = @items.clone
-      items[index] =
-        case existing = items[index]
+      alter_key(key) do |existing|
+        case existing # = items[index]
         when Map, CollisionList
           existing.set(key, value)
         when Entry.matching(key)
@@ -79,7 +81,20 @@ module Fifth
         when nil
           Entry.new(key, value)
         end
-      Map.new(@level, items)
+      end
+    end
+
+    def delete(key)
+      alter_key(key) do |existing|
+        case existing
+        when Map, CollisionList
+          existing.delete(key)
+        when Entry.matching(key), nil
+          nil
+        when Entry
+          existing
+        end
+      end
     end
 
     def inspect
@@ -87,6 +102,13 @@ module Fifth
     end
 
     private
+
+    def alter_key(key)
+      index = index_at_level(key.hash)
+      items = @items.clone
+      items[index] = yield items[index]
+      Map.new(@level, items)
+    end
 
     def index_at_level(hash, level = @level)
       if level == 1
