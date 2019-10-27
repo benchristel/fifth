@@ -30,6 +30,30 @@ module Fifth
     MAX_LEVEL = 6
 
     class Entry < Struct.new(:key, :value)
+      def self.matching(key)
+        Proc.new do |entry|
+          entry.is_a?(Entry) && entry.key == key
+        end
+      end
+    end
+
+    class CollisionList
+      def initialize(list = List::Empty)
+        @list = list
+      end
+
+      def set(key, value)
+        self.class.new(@list.cons(Entry.new(key, value)))
+      end
+
+      def get(key)
+        list = @list
+        while list != List::Empty
+          return list.head.value if list.head.key == key
+          list = list.tail
+        end
+        nil
+      end
     end
 
     def initialize(level = 1, items = Array.new(BASE))
@@ -45,19 +69,12 @@ module Fifth
     def get(key)
       index = index_at_level(key.hash)
       value =
-        case @items[index]
-        when Map
-          @items[index].get(key)
-        when Entry
-          @items[index].key == key ? @items[index].value : nil
-        when List::Cell
-          cell = @items[index]
-          while cell.tail != List::Empty
-            break if cell.head.key == key
-            cell = cell.tail
-          end
-          cell.head.key == key ? cell.head.value : nil
-        when nil
+        case it = @items[index]
+        when Map, CollisionList
+          it.get(key)
+        when Entry.matching(key)
+          it.value
+        else
           nil
         end
       raise "Cannot get nonexistent key #{key.inspect}" if value.nil?
@@ -68,26 +85,23 @@ module Fifth
       index = index_at_level(key.hash)
       items = @items.clone
       items[index] =
-        case items[index]
-        when nil
+        case existing = items[index]
+        when Map, CollisionList
+          existing.set(key, value)
+        when Entry.matching(key)
           Entry.new(key, value)
-        when Map
-          items[index].set(key, value)
-        when List::Cell
-          items[index].cons(Entry.new(key, value))
-        else
-          existing = items[index]
-          if existing.key == key
-            Entry.new(key, value)
-          else
+        when Entry
+          container =
             if @level < MAX_LEVEL
               Map.new(@level + 1)
-                .set(key, value)
-                .set(existing.key, existing.value)
             else
-              List::Empty.cons(Entry.new(key, value)).cons(Entry.new(existing.key, existing.value))
+              CollisionList.new
             end
-          end
+          container
+            .set(key, value)
+            .set(existing.key, existing.value)
+        when nil
+          Entry.new(key, value)
         end
       Map.new(@level, items)
     end
@@ -96,7 +110,7 @@ module Fifth
       @items.inspect
     end
 
-    protected
+    private
 
     def index_at_level(hash, level = @level)
       if level == 1

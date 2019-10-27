@@ -119,19 +119,26 @@ module Fifth
     context "when there is a hash collision" do
       let(:good) { double :good, hash: 0 }
       let(:evil) { double :evil, hash: 0 }
+      let(:neutral) { double :neutral, hash: 0 }
       let(:absent) { double :absent, hash: 0 }
 
       subject do
-        Map.new.set(good, 1).set(evil, 2)
+        Map.new.set(good, 1).set(evil, 2).set(neutral, 3)
       end
 
       it "still keeps keys distinct" do
         expect(subject.get(good)).to eq 1
         expect(subject.get(evil)).to eq 2
+        expect(subject.get(neutral)).to eq 3
       end
 
       it "does not mistake absent keys for present ones" do
         expect { subject.get(absent) }.to raise_error 'Cannot get nonexistent key #<Double :absent>'
+      end
+
+      it "does not mistake an absent key for a single present one" do
+        map = Map.new.set(good, 1)
+        expect { map.get(absent) }.to raise_error 'Cannot get nonexistent key #<Double :absent>'
       end
     end
   end
