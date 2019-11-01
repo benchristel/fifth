@@ -531,3 +531,77 @@ expand macros that were *not* affected by the `env-set`.
 `yield` and `env-replace` are both optimization firewalls,
 since they can in principle change anything in the
 environment.
+
+## Built-In Instructions
+
+Several `Name`s in the Fifth language are not macros; they
+are instructions built into the language and implemented by
+code in the interpreter.
+
+The built-in instructions are:
+
+### Numbers
+
+- add
+- sub
+- mul
+- div
+- sign
+- numerator
+- denominator
+
+### Strings
+
+- rune
+- length
+- to-name
+- split
+- join
+- substring?
+
+### Lists
+
+- empty?
+- head
+- tail
+
+### Maps
+
+- empty?
+- key?
+- keys
+- get
+- set
+- delete
+
+### Formatting
+
+- to-s
+- serialize
+
+### Stack Manipulation
+
+- dup
+- drop
+
+### Meta
+
+- eval
+- parse-fifth
+- current-vm
+- env-replace
+- env-set
+- evolve
+- yield
+
+Notably *not* built-in are:
+
+- `cond`. This is implemented using map lookups. Nor is `if`
+  built-in; it is implemented in terms of `cond`.
+- `loop` is a macro for `dup eval`.
+- Comparison operators `eq?`, `gt?`, and `lt?`. These can be
+  implemented in terms of `sub`, `sign`, and `cond`.
+- Boolean operators `and`, `or`, and `not`. These can be
+  implemented in terms of `cond`.
+- `env-push` and `env-pop`. Programs should create their own
+  conventions for macro scoping.
