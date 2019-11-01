@@ -351,7 +351,7 @@ they would appear if written literally in a Fifth program.
 For example:
 
 ```
-(dividend divisor div-int -> quotient remainder)
+(dividend divisor div-rem -> quotient remainder)
 ```
 
 means that the Fifth `Term`s `7 2 div-rem`, when executed
