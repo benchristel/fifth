@@ -13,7 +13,7 @@ data structures.
 
 Fifth is designed to be a comfortable compilation target
 for higher-level languages. It should be very simple to
-implement a Fifth VM. Fifth is also supposed to be
+implement a Fifth interpreter. Fifth is also supposed to be
 reasonably pleasant to read.
 
 ## Status of This Document
@@ -320,7 +320,7 @@ intervene in Fifth programs from time to time.
 To escalate control to the interpreter, you use the `yield`
 `Term`. When the interpreter reaches a `yield`, it stops
 normal execution, and inspects the VM state to figure out
-what to do. Generally, the `Term` at the top of the stack
+what to do. Generally, the `Term` at the top of the `stack`
 provides further clues by naming a command: e.g. `[random]`
 tells the interpreter to generate a random number. Assuming
 the interpreter recognizes the command, it performs the
@@ -333,3 +333,201 @@ If the interpreter does not recognize the command or the
 execution of the command fails, the interpreter signals an
 error to the user, and execution of the VM state does not
 continue.
+
+## Notation for Functional Macro Signatures
+
+Fifth has a conventional notation for describing in comments
+the effect that a macro has on the `stack`.
+
+The general format is:
+
+```
+(inputs -> outputs)
+```
+
+Where the inputs and outputs are given in the order that
+they would appear if written literally in a Fifth program.
+
+For example:
+
+```
+(dividend divisor div-int -> quotient remainder)
+```
+
+means that the Fifth `Term`s `7 2 div-rem`, when executed
+as part of a program, have exactly the same effect on the
+stack as the `Term`s `3 1` (since 7/2 is 3 in integer math,
+and the remainder of 7/2 is 1).
+
+## Mathematics
+
+The arithmetic operations `add`, `sub`, `mul`, and `div`
+must be implemented by the Fifth interpreter. Other
+mathematical operations are implemented in the standard
+library.
+
+The four arithmetic operations operate on rational
+numbers and produce an exact rational representation of the
+result. I.e. there is no rounding.
+
+```
+(a b add -> sum)
+(minuend subtrahend sub -> difference)
+(a b mul -> product)
+(dividend divisor div -> fraction)
+```
+
+The standard library implements `div-rem` (which performs
+division with a remainder), `abs` (absolute value), and the
+integer-rounding functions `ceiling` and `floor`.
+
+```
+(dividend divisor div-rem -> quotient remainder)
+(x abs -> absolute-value)
+(x ceiling -> smallest-int-at-least-x)
+(x floor -> largest-int-at-most-x)
+```
+
+### Irrational Numbers
+
+The standard library implements the functions `pow`, `ln`,
+`sin`, `cos`, `tan`, `asin`, `acos`, and `atan`. Since each
+of these may produce irrational results, the Fifth
+programmer must specify the maximum error allowed in the
+result.
+
+```
+(base max-error exponent pow -> result)
+(n max-error ln -> result)
+```
+
+The Fifth programmer can easily implement a square-root
+function if required, using the fact that `sqrt(n)` is
+`n^(1/2)`:
+
+```
+(n max-error sqrt -> root)
+[sqrt]
+[
+  1/2 pow
+]
+define
+```
+
+When the value of a trigonometric function is `0`, `1`, or
+`-1`, the corresponding Fifth function must output exactly
+that value.
+
+Additionally, the `pow` function is guaranteed to produce
+an exact rational result whenever the `exponent` is an
+integer.
+
+Constants for `pi` and `e` are not provided, but they can
+be calculated to any desired precision using the identities
+`pi = acos(-1)` and `e = [0..inf].map(n -> 1/n!).sum`
+
+## Interruptability
+
+A Fifth interpreter may run in a single-threaded environment
+with cooperative multitasking (e.g. a web page), where an
+infinite loop would cause the interpreter and its user
+interface to hang. A correct interpreter must be able to
+yield the CPU after every interpretation step, though it
+need not do so.
+
+This requirement is reflected in the interface of the
+`evolve` instruction, which allows a Fifth program to call
+the interpreter:
+
+```
+(vm steps evolve -- vm)
+```
+
+To `evolve` a VM by 1000 steps, you'd do
+
+```
+my-vm 1000 evolve
+```
+
+Since every evolution step is a computation that must
+terminate, there is no way for a Fifth program to force the
+interpreter into an infinite loop. Even in a single-threaded
+environment, running untrusted code, the user will always
+be able to stop a runaway Fifth program without destroying
+the VM state.
+
+## Idioms
+
+### Loops
+
+```
+[ (this list is the loop body)
+  do something
+
+  (loop again if should-continue? is true)
+  should-continue? [
+    dup
+    eval
+  ] [
+    (else, remove the loop body from the stack)
+    forget
+  ] if
+]
+dup (duplicate the loop, so it can "call" itself recursively
+  if another iteration should be performed)
+eval
+```
+
+Since `dup eval` is so common in looping constructs, the
+standard library defines a macro `loop` which simply does
+`dup eval`.
+
+## Optimization
+
+To keep the core of Fifth simple, many seemingly basic
+utilities, like the ability to create loops and define
+functions, have been pushed off to the standard library
+rather than specified as part of the language. This lowers
+the amount of code one must write to implement a Fifth
+interpreter, at some cost to performance.
+
+The hope is that by keeping language features simple and
+orthogonal, the language will be relatively easy to optimize
+in the places where optimization is needed.
+
+One language feature that could thwart optimization is the
+ability of programs to redefine macros. I'm assuming that
+optimization involves the interpreter looking ahead at the
+program `Term`s to be evaluated, expanding macros to produce
+a sequence of primitive instructions, and then looking for
+sequences of instructions that can be transformed into
+more efficient ones. In order for the interpreter to do
+this, it needs to be certain that the macros it's expanding
+are not going to be redefined before they are actually
+reached in the course of execution. I believe JavaScript
+engines run into similar optimization issues in the presence
+of `with` statements, where it's impossible to determine
+what a variable name refers to until the code actually runs.
+
+To avoid running into the same problems that have plagued
+JavaScript, I think it's important to have few ways of
+modifying values in the environment, so that the optimizer
+can definitively tell when a macro is redefined.
+
+Instructions that change the environment include:
+
+```
+env-replace
+env-set
+yield
+```
+
+While `env-replace` is not orthogonal to `env-set`, I think
+it's important for them to be separate, since `env-set` is
+likely to be used in the majority of cases and since it may
+be very useful for the optimizer to retain the ability to
+expand macros that were *not* affected by the `env-set`.
+
+`yield` and `env-replace` are both optimization firewalls,
+since they can in principle change anything in the
+environment.
