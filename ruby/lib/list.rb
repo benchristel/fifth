@@ -1,5 +1,12 @@
 module Fifth
   class List
+    def self.from_a(array)
+      return array if array.is_a? Cell
+      array.reverse.reduce(Empty) do |list, item|
+        list.cons(item)
+      end
+    end
+
     class Cell < Struct.new(:head, :tail)
       def empty?
         false
@@ -16,9 +23,30 @@ module Fifth
           tail.select(&block)
         end
       end
+
+      def inspect
+        "#{head.inspect} :: #{tail.inspect}"
+      end
+
+      def count
+        1 + tail.count
+      end
+
+      def count_less_than(cap)
+        # TODO: avoid counting the whole list
+        count < cap
+      end
+
+      def head_or_nil
+        head
+      end
+
+      def tail_or_empty
+        tail
+      end
     end
 
-    Empty = Class.new(Cell) do
+    class EmptyClass < Cell
       def empty?
         true
       end
@@ -34,6 +62,24 @@ module Fifth
       def select
         Empty
       end
-    end.new(nil, nil)
+
+      def inspect
+        "Empty"
+      end
+
+      def count
+        0
+      end
+
+      def head_or_nil
+        nil
+      end
+
+      def tail_or_empty
+        Empty
+      end
+    end
+
+    Empty = EmptyClass.new(nil, nil)
   end
 end

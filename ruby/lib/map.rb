@@ -11,6 +11,10 @@ module Fifth
           entry.is_a?(Entry) && entry.key == key
         end
       end
+
+      def inspect
+        "#<Entry #{key.inspect} => #{value.inspect}>"
+      end
     end
 
     class CollisionList < Struct.new(:list)
@@ -98,7 +102,7 @@ module Fifth
     end
 
     def inspect
-      @items.inspect
+      @items.compact.inspect
     end
 
     def ==(other)
