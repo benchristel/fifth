@@ -28,10 +28,10 @@ module Fifth
       case term
       when Symbol
         {
-          add: Add,
+          add: Add.new,
         }[term]
       when nil
-        Noop
+        Noop.new
       else
         StackData.new(term)
       end
@@ -47,13 +47,13 @@ module Fifth
     end
 
     class Noop
-      def self.invoke(vm)
+      def invoke(vm)
         [vm, nil]
       end
     end
 
     class Add
-      def self.invoke(vm)
+      def invoke(vm)
         stack = vm.get(:stack)
         return [vm, "`add` requires two operands"] if stack.count_less_than(2)
 
