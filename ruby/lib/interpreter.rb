@@ -5,13 +5,13 @@ module Fifth
       new_vm, err = instruction.invoke(vm)
 
       if err
-        return [original_vm, err]
+        return original_vm
       end
 
       if steps > 1
         evolve new_vm, steps - 1
       else
-        [new_vm, nil]
+        new_vm
       end
     end
 
