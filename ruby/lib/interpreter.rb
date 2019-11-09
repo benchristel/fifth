@@ -2,9 +2,9 @@ module Fifth
   class Interpreter
     def self.evolve(original_vm, steps)
       instruction, vm = dequeue_instruction(original_vm)
-      new_vm, err = instruction.invoke(vm)
-
-      if err
+      begin
+        new_vm = instruction.invoke(vm)
+      rescue
         return original_vm
       end
 
@@ -39,27 +39,27 @@ module Fifth
 
     class StackData < Struct.new(:term)
       def invoke(vm)
-        [VM.build(
+        VM.build(
           program: vm.get(:program),
           stack: vm.get(:stack).cons(term)
-        ), nil]
+        )
       end
     end
 
     class Noop
       def invoke(vm)
-        [vm, nil]
+        vm
       end
     end
 
     class Add
       def invoke(vm)
         stack = vm.get(:stack)
-        return [vm, "`add` requires two operands"] if stack.count_less_than(2)
+        raise "`add` requires two operands" if stack.count_less_than(2)
 
         a = stack.head
         b = stack.tail.head
-        [vm.set(:stack, stack.tail.tail.cons(a + b)), nil]
+        vm.set(:stack, stack.tail.tail.cons(a + b))
       end
     end
   end

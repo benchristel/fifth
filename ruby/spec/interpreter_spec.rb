@@ -47,12 +47,12 @@ module Fifth
     describe Add do
       it "adds two numbers without erroring" do
         vm = VM.build stack: [3, 5]
-        expect(Add.new.invoke(vm)).to eq [VM.build(stack: [8]), nil]
+        expect(Add.new.invoke(vm)).to eq VM.build(stack: [8])
       end
 
       it "errors given a single number" do
         vm = VM.build stack: [3]
-        expect(Add.new.invoke(vm)).to eq [VM.build(stack: [3]), "`add` requires two operands"]
+        expect { Add.new.invoke(vm) }.to raise_error "`add` requires two operands"
       end
     end
   end
