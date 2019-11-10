@@ -43,70 +43,70 @@ module Fifth
     end
   end
 
-  module Instruction
+  class Instruction
     describe Add do
       it "adds two numbers without erroring" do
         vm = VM.build stack: [3, 5]
-        expect(Add.new.invoke(vm)).to eq VM.build(stack: [8])
+        expect(Add.new(vm).invoke).to eq VM.build(stack: [8])
       end
 
       it "errors given a single number" do
         vm = VM.build stack: [3]
-        expect { Add.new.invoke(vm) }.to raise_error "`add` requires two operands"
+        expect { Add.new(vm).invoke }.to raise_error "`add` requires two operands"
       end
     end
 
     describe Eval do
       it "does nothing given an empty instruction list" do
         vm = VM.build stack: [List.from_a([])]
-        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [])
+        expect(Eval.new(vm).invoke).to eq VM.build(stack: [])
       end
 
       it "errors when no instruction list is given" do
         vm = VM.build
-        expect { Eval.new.invoke(vm) }.to raise_error "`eval` requires a list"
+        expect { Eval.new(vm).invoke }.to raise_error "`eval` requires a list"
       end
 
       it "errors when the operand is not a list" do
         vm = VM.build stack: [3]
-        expect { Eval.new.invoke(vm) }.to raise_error "`eval` requires a list"
+        expect { Eval.new(vm).invoke }.to raise_error "`eval` requires a list"
       end
 
       it "evaluates one term" do
         vm = VM.build stack: [List.from_a([3])]
-        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [3])
+        expect(Eval.new(vm).invoke).to eq VM.build(stack: [3])
       end
 
       it "evaluates two terms" do
         vm = VM.build stack: [List.from_a([1, 2])]
-        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [2, 1])
+        expect(Eval.new(vm).invoke).to eq VM.build(stack: [2, 1])
       end
 
       it "evaluates multiple types of terms" do
         vm = VM.build stack: [List.from_a([1, 2, :add])]
-        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [3])
+        expect(Eval.new(vm).invoke).to eq VM.build(stack: [3])
       end
 
       it "errors if any instructions in the list error" do
         vm = VM.build stack: [List.from_a([2, :add])]
-        expect { Eval.new.invoke(vm) }.to raise_error "`add` requires two operands"
+        expect { Eval.new(vm).invoke }.to raise_error "`add` requires two operands"
       end
     end
 
     describe Dup do
       it "errors when the stack is empty" do
         vm = VM.build
-        expect { Dup.new.invoke(vm) }.to raise_error "`dup` requires an operand"
+        expect { Dup.new(vm).invoke }.to raise_error "`dup` requires an operand"
       end
 
       it "duplicates the head of the stack" do
         vm = VM.build stack: [1]
-        expect(Dup.new.invoke(vm)).to eq VM.build(stack: [1, 1])
+        expect(Dup.new(vm).invoke).to eq VM.build(stack: [1, 1])
       end
 
       it "does not modify other stack items" do
         vm = VM.build stack: [1, 2]
-        expect(Dup.new.invoke(vm)).to eq VM.build(stack: [1, 1, 2])
+        expect(Dup.new(vm).invoke).to eq VM.build(stack: [1, 1, 2])
       end
     end
   end
