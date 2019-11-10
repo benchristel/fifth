@@ -55,5 +55,42 @@ module Fifth
         expect { Add.new.invoke(vm) }.to raise_error "`add` requires two operands"
       end
     end
+
+    describe Eval do
+      it "does nothing given an empty instruction list" do
+        vm = VM.build stack: [List.from_a([])]
+        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [])
+      end
+
+      it "errors when no instruction list is given" do
+        vm = VM.build
+        expect { Eval.new.invoke(vm) }.to raise_error "`eval` requires a list"
+      end
+
+      it "errors when the operand is not a list" do
+        vm = VM.build stack: [3]
+        expect { Eval.new.invoke(vm) }.to raise_error "`eval` requires a list"
+      end
+
+      it "evaluates one term" do
+        vm = VM.build stack: [List.from_a([3])]
+        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [3])
+      end
+
+      it "evaluates two terms" do
+        vm = VM.build stack: [List.from_a([1, 2])]
+        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [2, 1])
+      end
+
+      it "evaluates multiple types of terms" do
+        vm = VM.build stack: [List.from_a([1, 2, :add])]
+        expect(Eval.new.invoke(vm)).to eq VM.build(stack: [3])
+      end
+
+      it "errors if any instructions in the list error" do
+        vm = VM.build stack: [List.from_a([2, :add])]
+        expect { Eval.new.invoke(vm) }.to raise_error "`add` requires two operands"
+      end
+    end
   end
 end

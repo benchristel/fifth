@@ -62,5 +62,16 @@ module Fifth
         vm.set(:stack, stack.tail.tail.cons(a + b))
       end
     end
+
+    class Eval
+      def invoke(vm)
+        stack = vm.get(:stack)
+        raise "`eval` requires a list" if stack.count_less_than(1) || !stack.head.is_a?(List::Cell)
+
+        stack.head.reduce(vm.set(:stack, stack.tail)) do |vm, instr|
+          Instruction.build(instr).invoke(vm)
+        end
+      end
+    end
   end
 end

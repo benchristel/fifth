@@ -8,6 +8,8 @@ module Fifth
     end
 
     class Cell < Struct.new(:head, :tail)
+      include Enumerable
+
       def empty?
         false
       end
@@ -22,6 +24,11 @@ module Fifth
         else
           tail.select(&block)
         end
+      end
+
+      def each(&block)
+        yield head
+        tail.each(&block)
       end
 
       def inspect
@@ -57,6 +64,9 @@ module Fifth
 
       def tail
         raise "Cannot get tail of empty list."
+      end
+
+      def each
       end
 
       def select
