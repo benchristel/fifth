@@ -92,5 +92,22 @@ module Fifth
         expect { Eval.new.invoke(vm) }.to raise_error "`add` requires two operands"
       end
     end
+
+    describe Dup do
+      it "errors when the stack is empty" do
+        vm = VM.build
+        expect { Dup.new.invoke(vm) }.to raise_error "`dup` requires an operand"
+      end
+
+      it "duplicates the head of the stack" do
+        vm = VM.build stack: [1]
+        expect(Dup.new.invoke(vm)).to eq VM.build(stack: [1, 1])
+      end
+
+      it "does not modify other stack items" do
+        vm = VM.build stack: [1, 2]
+        expect(Dup.new.invoke(vm)).to eq VM.build(stack: [1, 1, 2])
+      end
+    end
   end
 end

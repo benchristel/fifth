@@ -73,5 +73,13 @@ module Fifth
         end
       end
     end
+
+    class Dup
+      def invoke(vm)
+        stack = vm.get(:stack)
+        raise "`dup` requires an operand" if stack.count_less_than(1)
+        vm.set(:stack, stack.cons(stack.head))
+      end
+    end
   end
 end
