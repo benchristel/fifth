@@ -109,5 +109,22 @@ module Fifth
         expect(Dup.new(vm).invoke).to eq VM.build(stack: [1, 1, 2])
       end
     end
+
+    describe Drop do
+      it "errors when the stack is empty" do
+        vm = VM.build
+        expect { Drop.new(vm).invoke }.to raise_error "`drop` requires an operand"
+      end
+
+      it "removes the head of the stack" do
+        vm = VM.build stack: [1]
+        expect(Drop.new(vm).invoke).to eq VM.build(stack: [])
+      end
+
+      it "does not modify other stack items" do
+        vm = VM.build stack: [1, 2]
+        expect(Drop.new(vm).invoke).to eq VM.build(stack: [2])
+      end
+    end
   end
 end

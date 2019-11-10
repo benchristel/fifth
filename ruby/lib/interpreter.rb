@@ -127,5 +127,19 @@ module Fifth
         vm.set(:stack, stack.cons(stack.head))
       end
     end
+
+    class Drop < Instruction
+      def error
+        "`drop` requires an operand"
+      end
+
+      def error?
+        stack.count_less_than(1)
+      end
+
+      def operate
+        vm.set(:stack, stack.tail)
+      end
+    end
   end
 end
