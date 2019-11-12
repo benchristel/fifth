@@ -23,18 +23,38 @@ incomplete. Everything is subject to change.
 
 ## Overall Structure
 
-Fifth is a stack-based language where the computer's
-"working memory" is represented as a stack. Data to be
-manipulated are loaded onto the stack, and then operated on
-by *instructions*. Instructions always affect the topmost
-items of the stack.
+Fifth is, at its root, a language for representing
+structured data. Readers who are familiar with JSON will
+recognize Fifth's lists, key-value maps, numbers, and
+strings.
 
-Data values are immutable, though variables can be
-reassigned.
+However, Fifth can do more than represent static data. A
+certain type of Fifth data structure, called a VM or Virtual
+Machine, represents the state of a computational process.
+Fifth defines a mathematical function, `evolve`, which
+determines the next state in a VM's computation. The set
+of VMs is closed under `evolve`; i.e. the result of
+`evolve`ing a VM is always another VM. A VM contains a
+*program*, which is the main thing that tells the process
+what to do next. The program is so important that the
+creation of useful Fifth VMs is largely an exercise in
+crafting useful programs.
+
+Since data, computational processes, and programs are all
+represented using the same types of structures, Fifth is
+termed a *homoiconic* language. Metaprogramming in Fifth
+is simple, since programs can create other programs or VMs
+as easily as they can output data.
+
+While Fifth is an abstract mathematical system that need not
+be attached to a particular notation, it is useful to have
+textual conventions for representing Fifth data. The
+following section, on syntax, describes the current
+convention.
 
 ## Syntax
 
-A program in the Fifth language is represented textually as
+Data in the Fifth language are represented textually as
 a sequence of whitespace-separated items called `Term`s.
 
 There are five types of `Term`s: Rational Numbers, Strings,
@@ -189,17 +209,16 @@ get
 
 ## The Fifth VM
 
-The entire state of a running Fifth program can be
-represented by a data structure called a "VM" or *Virtual
-Machine*.
+The state of a computational process in Fifth is represented
+by a data structure called a "VM" or *Virtual Machine*.
 
 A VM comprises the following data:
 
 Field       | Type
 ----------- | ----
-program     | `List` of `Term`s
-stack       | `List` of `Term`s
-environment | `Map` of `Name`s to `List`s of `Term`s
+program     | `List`
+stack       | `List`
+environment | `Map` of `Name`s to `List`s
 
 The meanings of these fields and their data types will be
 described in the following sections.
@@ -232,8 +251,15 @@ prepending their definitions to the `program` is called
 
 ### Invoking a Term
 
-To `invoke` a `Term` is to pop it off the `program` `List`
-and possibly alter the VM state in some additional way.
+To `invoke` a `Term` in the context of a VM is to produce
+a new VM that has been altered in some specific way defined
+by the `Term`.
+
+In Elm type notation:
+
+```
+invoke : Term -> VM -> VM
+```
 
 When the `Term` being `invoke`d is a Number, String, List,
 or Map, the effect of the invocation is simply to push the
